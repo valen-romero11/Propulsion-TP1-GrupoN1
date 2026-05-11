@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Predimensionamiento de Motores Aeronáuticos — UTN FRH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<style>
+/* ══════════════════════════════════════════════════
+   VARIABLES — paleta del TP
+══════════════════════════════════════════════════ */
+:root {
+  --fucsia:      #FF0066;
+  --fucsia-dark: #D60093;
+  --fucsia-soft: #FF6699;
+  --salmon:      #F6C5AC;
+  --salmon-dark: #E8A888;
+  --bg:          #F8F2F5;
+  --bg-card:     #FFFFFF;
+  --bg-input:    #FFF5F9;
+  --border:      #E8C8D8;
+  --border-dark: #D4A0B8;
+  --text:        #1A1A2E;
+  --text-sub:    #5A4A54;
+  --text-light:  #8A7A84;
+  --azul:        #1F4E79;
+  --verde:       #2E7D52;
+  --amarillo:    #B8860B;
+  --shadow:      0 2px 12px rgba(255,0,102,0.08);
+  --shadow-md:   0 4px 20px rgba(255,0,102,0.12);
+  --radius:      8px;
+  --font:        'Barlow', sans-serif;
+  --font-cond:   'Barlow Condensed', sans-serif;
+  --font-mono:   'JetBrains Mono', monospace;
+}
+
+/* ── Reset ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ══════════════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════════════ */
+.app-header {
+  background: var(--fucsia);
+  color: #fff;
+  padding: 0;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 16px rgba(255,0,102,0.3);
+}
+.header-inner {
+  display: flex; align-items: center; gap: 1rem;
+  max-width: 1400px; margin: 0 auto;
+  padding: 0.65rem 1.5rem;
+}
+.header-logo {
+  font-family: var(--font-cond);
+  font-size: 1.1rem; font-weight: 700;
+  background: rgba(255,255,255,0.18);
+  padding: 0.3rem 0.75rem; border-radius: 4px;
+  letter-spacing: 0.04em; white-space: nowrap;
+}
+.header-title {
+  font-family: var(--font-cond);
+  font-size: 1.25rem; font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.header-sub {
+  font-size: 0.78rem; opacity: 0.82;
+  font-weight: 400; margin-top: 1px;
+}
+.header-grupo {
+  margin-left: auto;
+  font-size: 0.78rem; opacity: 0.85;
+  text-align: right; line-height: 1.3;
+  font-family: var(--font-mono);
+}
+
+/* ══════════════════════════════════════════════════
+   LAYOUT PRINCIPAL
+══════════════════════════════════════════════════ */
+.app-body {
+  max-width: 1400px; margin: 0 auto;
+  padding: 1.25rem 1.25rem;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  grid-template-rows: auto auto 1fr;
+  gap: 1rem;
+}
+
+/* ══════════════════════════════════════════════════
+   PANEL DE ENTRADAS (columna izquierda)
+══════════════════════════════════════════════════ */
+.panel-entradas {
+  grid-row: 1 / 4;
+  display: flex; flex-direction: column; gap: 0.75rem;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  background: var(--fucsia);
+  color: #fff;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius) var(--radius) 0 0;
+  font-family: var(--font-cond);
+  font-size: 0.82rem; font-weight: 700;
+  letter-spacing: 0.07em; text-transform: uppercase;
+}
+
+.card-body { padding: 0.85rem; }
+
+/* ── Grupos de input ───────────────────────────── */
+.input-group {
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: center; gap: 0.3rem;
+  margin-bottom: 0.55rem;
+}
+.input-group:last-child { margin-bottom: 0; }
+
+label {
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--text-sub); grid-column: 1 / 3;
+  margin-bottom: 0.1rem;
+}
+label .unit {
+  font-weight: 400; color: var(--text-light);
+  font-family: var(--font-mono); font-size: 0.73rem;
+}
+
+input[type="number"], select {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-dark);
+  border-radius: 5px;
+  padding: 0.38rem 0.6rem;
+  font-family: var(--font-mono); font-size: 0.82rem;
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  grid-column: 1 / 3;
+}
+input[type="number"]:focus, select:focus {
+  outline: none;
+  border-color: var(--fucsia);
+  box-shadow: 0 0 0 3px rgba(255,0,102,0.12);
+}
+select { cursor: pointer; }
+
+/* Slider r */
+.slider-wrapper {
+  grid-column: 1 / 3;
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  background: linear-gradient(to right, var(--fucsia) 0%, var(--salmon) 100%);
+  border-radius: 2px;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--fucsia);
+  border: 2px solid #fff;
+  box-shadow: 0 0 4px rgba(255,0,102,0.4);
+  cursor: pointer;
+}
+.slider-val {
+  font-family: var(--font-mono); font-size: 0.78rem;
+  color: var(--fucsia); font-weight: 700;
+  min-width: 30px; text-align: right;
+}
+
+/* ── Botón calcular ────────────────────────────── */
+.btn-calcular {
+  width: 100%;
+  background: var(--fucsia);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.7rem;
+  font-family: var(--font-cond);
+  font-size: 1rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 3px 10px rgba(255,0,102,0.3);
+}
+.btn-calcular:hover  { background: var(--fucsia-dark); box-shadow: 0 4px 16px rgba(255,0,102,0.4); }
+.btn-calcular:active { transform: scale(0.98); }
+
+/* ══════════════════════════════════════════════════
+   ALERTAS
+══════════════════════════════════════════════════ */
+.alert {
+  display: none;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius);
+  font-size: 0.8rem; line-height: 1.45;
+  border-left: 4px solid;
+  margin-bottom: 0.75rem;
+}
+.alert-warning { background: #FFF3CD; border-color: #F59E0B; color: #7A4F00; }
+.alert-danger  { background: #FEE2E2; border-color: #EF4444; color: #7F1D1D; }
+.alert-error   { background: #FEE2E2; border-color: var(--fucsia); color: #7F1D1D; }
+
+/* ══════════════════════════════════════════════════
+   PANEL CENTRAL — RESULTADOS
+══════════════════════════════════════════════════ */
+.panel-resultados {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* ── Tarjetas de métricas ──────────────────────── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding: 0.75rem;
+}
+.metric {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.55rem 0.65rem;
+  text-align: center;
+}
+.metric-label {
+  font-size: 0.68rem; font-weight: 600;
+  color: var(--text-light); text-transform: uppercase;
+  letter-spacing: 0.05em; margin-bottom: 0.2rem;
+}
+.metric-value {
+  font-family: var(--font-mono); font-size: 0.95rem;
+  font-weight: 700; color: var(--fucsia-dark);
+}
+.metric-value.big { font-size: 1.1rem; color: var(--fucsia); }
+.metric.highlight {
+  background: linear-gradient(135deg, #FFF0F5, #FFE0EC);
+  border-color: var(--fucsia-soft);
+}
+
+/* ISA row */
+.isa-row {
+  display: flex; gap: 0.5rem;
+  padding: 0 0.75rem 0.75rem;
+}
+.isa-badge {
+  flex: 1;
+  background: var(--salmon);
+  border-radius: 5px; padding: 0.4rem 0.6rem;
+  text-align: center;
+}
+.isa-badge-label { font-size: 0.65rem; font-weight: 600; color: var(--text-sub); text-transform: uppercase; }
+.isa-badge-val   { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; color: var(--azul); }
+
+/* ── Tabla de estados ──────────────────────────── */
+.tabla-estados {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.8rem; font-family: var(--font-mono);
+}
+.tabla-estados thead tr {
+  background: var(--fucsia);
+  color: #fff;
+}
+.tabla-estados thead th {
+  padding: 0.45rem 0.6rem;
+  font-family: var(--font-cond); font-weight: 700;
+  font-size: 0.75rem; letter-spacing: 0.04em;
+  text-align: right;
+}
+.tabla-estados thead th:first-child { text-align: left; }
+.tabla-estados tbody tr:nth-child(odd)  { background: #fff; }
+.tabla-estados tbody tr:nth-child(even) { background: var(--salmon); background: #FDF0F5; }
+.tabla-estados tbody tr:hover           { background: #FFE8F0; }
+.tabla-estados td {
+  padding: 0.42rem 0.6rem; text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+.tabla-estados td:first-child { text-align: left; font-family: var(--font); font-weight: 600; font-size: 0.78rem; }
+td.alerta-T { color: #C0392B; font-weight: 700; }
+td.alerta-P { color: #C0392B; font-weight: 700; }
+
+/* ── Geometría ─────────────────────────────────── */
+.geo-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0.4rem; padding: 0.75rem;
+}
+.geo-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.3rem 0.5rem;
+  background: var(--bg); border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.geo-label { font-size: 0.74rem; font-weight: 600; color: var(--text-sub); }
+.geo-val   { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; color: var(--azul); }
+
+/* C-75 comparación */
+.c75-strip {
+  background: var(--salmon);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 0.5rem 0.75rem;
+  display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+}
+.c75-label { font-size: 0.7rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
+.c75-item  { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text); }
+.c75-item span { font-weight: 700; color: var(--fucsia-dark); }
+
+/* ══════════════════════════════════════════════════
+   PANEL DE GRÁFICOS
+══════════════════════════════════════════════════ */
+.panel-graficos { grid-column: 2; }
+
+/* Pestañas */
+.tabs { display: flex; gap: 0; border-bottom: 2px solid var(--fucsia); margin-bottom: 0.75rem; }
+.tab-btn {
+  background: none; border: none;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-cond); font-size: 0.82rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-sub); cursor: pointer;
+  border-radius: var(--radius) var(--radius) 0 0;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+}
+.tab-btn:hover { background: var(--salmon); color: var(--fucsia); }
+.tab-btn.active {
+  background: var(--fucsia); color: #fff;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Toggle log */
+.log-toggle {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.75rem; color: var(--text-sub); margin-bottom: 0.5rem;
+}
+.log-toggle input { width: auto; cursor: pointer; }
+
+.plotly-div {
+  width: 100%; height: 400px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.graf-grid-2 {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+}
+
+/* ══════════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════════ */
+.app-footer {
+  text-align: center; padding: 1rem;
+  font-size: 0.72rem; color: var(--text-light);
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════ */
+@media (max-width: 960px) {
+  .app-body { grid-template-columns: 1fr; }
+  .panel-entradas { grid-row: auto; }
+  .panel-resultados { grid-template-columns: 1fr; }
+  .panel-graficos { grid-column: 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────── -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-logo">UTN FRH</div>
+    <div>
+      <div class="header-title">Predimensionamiento de Motores Aeronáuticos</div>
+      <div class="header-sub">Ciclos Otto · Diesel · Sabathé — Aire Estándar Frío</div>
+    </div>
+    <div class="header-grupo">
+      TP Nº 1 · Propulsión<br>
+      Grupo 1 — Denapole · Romero · Tartaruca · Varsalona
+    </div>
+  </div>
+</header>
+
+<div class="app-body">
+
+  <!-- ══════════════════════════════════════════════════
+       PANEL DE ENTRADAS
+  ══════════════════════════════════════════════════ -->
+  <aside class="panel-entradas">
+
+    <!-- Alertas -->
+    <div id="alert-error" class="alert alert-error"></div>
+    <div id="alert-T"     class="alert alert-warning"></div>
+    <div id="alert-P"     class="alert alert-danger"></div>
+
+    <!-- Condiciones de vuelo -->
+    <div class="card">
+      <div class="card-header">📡  Condiciones ISA de Vuelo</div>
+      <div class="card-body">
+        <div class="input-group">
+          <label>Altitud de operación <span class="unit">[ft]</span></label>
+          <input type="number" id="inp-h" value="4000" min="0" max="36000" step="100">
+        </div>
+      </div>
+    </div>
+
+    <!-- Motor -->
+    <div class="card">
+      <div class="card-header">⚙️  Parámetros del Motor</div>
+      <div class="card-body">
+        <div class="input-group">
+          <label>Potencia efectiva P<sub>ef</sub> <span class="unit">[HP]</span></label>
+          <input type="number" id="inp-pef" value="75" min="1" max="1000" step="1">
+        </div>
+        <div class="input-group">
+          <label>RPM de diseño <span class="unit">[rpm]</span></label>
+          <input type="number" id="inp-rpm" value="2275" min="100" max="10000" step="25">
+        </div>
+        <div class="input-group">
+          <label>N° de cilindros <span class="unit">[-]</span></label>
+          <input type="number" id="inp-ncil" value="4" min="1" max="24" step="1">
+        </div>
+        <div class="input-group">
+          <label>Rendimiento mecánico η<sub>mec</sub> <span class="unit">[-]</span></label>
+          <input type="number" id="inp-etamec" value="0.90" min="0.5" max="1.0" step="0.01">
+        </div>
+      </div>
+    </div>
+
+    <!-- Ciclo termodinámico -->
+    <div class="card">
+      <div class="card-header">🔥  Ciclo Termodinámico</div>
+      <div class="card-body">
+
+        <div class="input-group">
+          <label>Tipo de ciclo</label>
+          <select id="inp-ciclo">
+            <option value="Otto">Otto</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Sabathé">Sabathé (mixto)</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label>Relación de compresión <em>r</em> <span class="unit">[-]</span></label>
+          <input type="number" id="inp-r" value="6.3" min="2" max="18" step="0.1">
+          <div class="slider-wrapper">
+            <input type="range" id="slider-r" min="2" max="18" step="0.1" value="6.3">
+            <span class="slider-val" id="slider-r-val">6.3</span>
+          </div>
+        </div>
+
+        <div class="input-group" id="row-alpha" style="display:none">
+          <label>Fracción isocórica α <span class="unit">(solo Sabathé)</span></label>
+          <input type="number" id="inp-alpha" value="0.5" min="0.05" max="0.95" step="0.05">
+        </div>
+
+        <div class="input-group">
+          <label>Coef. isentrópico <em>k</em> <span class="unit">[-]</span></label>
+          <input type="number" id="inp-k" value="1.4" min="1.3" max="1.45" step="0.01">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Combustible -->
+    <div class="card">
+      <div class="card-header">⛽  Combustible y Mezcla</div>
+      <div class="card-body">
+        <div class="input-group">
+          <label>Combustible</label>
+          <select id="inp-comb">
+            <option value="C8H18" selected>Isoctano (C₈H₁₈) — 80/87</option>
+            <option value="C7H16">Heptano (C₇H₁₆)</option>
+            <option value="C6H14">Hexano (C₆H₁₄)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Mezcla relativa ϕ <span class="unit">[-]</span></label>
+          <input type="number" id="inp-phi" value="0.80" min="0.5" max="1.5" step="0.01">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-calcular" id="btn-calcular">▶  Calcular Ciclo</button>
+
+  </aside>
+
+  <!-- ══════════════════════════════════════════════════
+       PANEL DE RESULTADOS (arriba, columna derecha)
+  ══════════════════════════════════════════════════ -->
+  <section class="panel-resultados">
+
+    <!-- Condiciones ISA calculadas -->
+    <div class="card" style="grid-column: 1 / 3;">
+      <div class="card-header">📍  Condiciones ISA calculadas</div>
+      <div class="isa-row">
+        <div class="isa-badge">
+          <div class="isa-badge-label">Altitud</div>
+          <div class="isa-badge-val" id="out-h">—</div>
+        </div>
+        <div class="isa-badge">
+          <div class="isa-badge-label">T₁</div>
+          <div class="isa-badge-val" id="out-T1">—</div>
+        </div>
+        <div class="isa-badge">
+          <div class="isa-badge-label">p₁</div>
+          <div class="isa-badge-val" id="out-p1">—</div>
+        </div>
+        <div class="isa-badge">
+          <div class="isa-badge-label">η rendim.</div>
+          <div class="isa-badge-val" id="out-eta" style="color:var(--fucsia)">—</div>
+        </div>
+        <div class="isa-badge">
+          <div class="isa-badge-label">W_neto</div>
+          <div class="isa-badge-val" id="out-Wneto">—</div>
+        </div>
+        <div class="isa-badge">
+          <div class="isa-badge-label">PME</div>
+          <div class="isa-badge-val" id="out-PME">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de estados -->
+    <div class="card">
+      <div class="card-header">📊  Estados del Ciclo</div>
+      <div class="card-body" style="padding:0">
+        <table class="tabla-estados">
+          <thead>
+            <tr>
+              <th>Estado</th>
+              <th>T  [K]</th>
+              <th>p  [bar]</th>
+              <th>v  [L/kg]</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-estados">
+            <tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-light)">— calcule para ver resultados —</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Métricas y geometría -->
+    <div class="card">
+      <div class="card-header">🔢  Parámetros de Desempeño</div>
+      <div class="metrics-grid">
+        <div class="metric highlight">
+          <div class="metric-label">η térmico</div>
+          <div class="metric-value big" id="out-eta2">—</div>
+        </div>
+        <div class="metric highlight">
+          <div class="metric-label">PME</div>
+          <div class="metric-value big" id="out-PME2">—</div>
+        </div>
+        <div class="metric highlight">
+          <div class="metric-label">W_neto</div>
+          <div class="metric-value big" id="out-Wneto2">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Q_in</div>
+          <div class="metric-value" id="out-Qin">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Q_out</div>
+          <div class="metric-value" id="out-Qout">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">T_max</div>
+          <div class="metric-value" id="out-Tmax">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">p_max</div>
+          <div class="metric-value" id="out-Pmax">—</div>
+        </div>
+        <div class="metric" id="card-rc">
+          <div class="metric-label">r_c (corte)</div>
+          <div class="metric-value" id="out-rc">—</div>
+        </div>
+        <div class="metric" id="card-rp">
+          <div class="metric-label">r_p (presión)</div>
+          <div class="metric-value" id="out-rp">—</div>
+        </div>
+      </div>
+
+      <div class="card-header" style="border-radius:0; margin-top:0.25rem">🔧  Geometría del Motor</div>
+      <div class="geo-grid">
+        <div class="geo-row"><span class="geo-label">V_d total</span><span class="geo-val" id="out-Vd">—</span></div>
+        <div class="geo-row"><span class="geo-label">V_d / cilindro</span><span class="geo-val" id="out-Vdcil">—</span></div>
+        <div class="geo-row"><span class="geo-label">Diámetro D</span><span class="geo-val" id="out-D">—</span></div>
+        <div class="geo-row"><span class="geo-label">Carrera S</span><span class="geo-val" id="out-S">—</span></div>
+        <div class="geo-row" style="grid-column:1/3"><span class="geo-label">Vol. cámara V_cc</span><span class="geo-val" id="out-Vcc">—</span></div>
+      </div>
+
+      <!-- Comparación C-75 -->
+      <div class="c75-strip">
+        <span class="c75-label">Continental C-75 (ref.):</span>
+        <span class="c75-item">D = <span id="out-c75-D">—</span></span>
+        <span class="c75-item">S = <span id="out-c75-S">—</span></span>
+        <span class="c75-item">V_d/cil = <span id="out-c75-Vd">—</span></span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       PANEL DE GRÁFICOS (abajo, columna derecha)
+  ══════════════════════════════════════════════════ -->
+  <section class="panel-graficos card">
+    <div class="card-header">📈  Gráficos</div>
+    <div class="card-body">
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-pv">p-v</button>
+        <button class="tab-btn"        data-tab="tab-ts">T-s</button>
+        <button class="tab-btn"        data-tab="tab-param">Análisis r</button>
+        <button class="tab-btn"        data-tab="tab-comp">Comparación</button>
+      </div>
+
+      <!-- Diagrama p-v -->
+      <div class="tab-panel active" id="tab-pv">
+        <label class="log-toggle">
+          <input type="checkbox" id="toggle-log"> Escala logarítmica
+        </label>
+        <div id="graf-pv" class="plotly-div"></div>
+      </div>
+
+      <!-- Diagrama T-s -->
+      <div class="tab-panel" id="tab-ts">
+        <div id="graf-ts" class="plotly-div"></div>
+      </div>
+
+      <!-- Análisis paramétrico -->
+      <div class="tab-panel" id="tab-param">
+        <div class="graf-grid-2">
+          <div id="graf-param" class="plotly-div"></div>
+          <div id="graf-tmax"  class="plotly-div"></div>
+        </div>
+      </div>
+
+      <!-- Comparación de ciclos -->
+      <div class="tab-panel" id="tab-comp">
+        <div id="graf-comp" class="plotly-div"></div>
+      </div>
+
+    </div>
+  </section>
+
+</div><!-- /app-body -->
+
+<footer class="app-footer">
+  UTN Facultad Regional Haedo · Propulsión · TP Nº 1 · Grupo 1 (2026) —
+  Generado con asistencia de Claude (Anthropic) · Registrado en PROMPTS.md
+</footer>
+
+<!-- ── SCRIPTS ─────────────────────────────────────────── -->
+<script src="engine.js"></script>
+<script src="geometry.js"></script>
+<script src="charts.js"></script>
+<script>
+// Sincronizar slider ↔ label en tiempo real (antes de que ui.js arranque)
+document.getElementById('slider-r').addEventListener('input', function() {
+  document.getElementById('slider-r-val').textContent = this.value;
+});
+// Duplicar salidas en las tarjetas "big" (fuera del ciclo principal de ui.js)
+const origCalc = () => {};
+document.addEventListener('DOMContentLoaded', () => {
+  // Proxy para duplicar η, PME, Wneto en las tarjetas grandes
+  const observer = new MutationObserver(() => {
+    ['eta','PME','Wneto'].forEach(k => {
+      const src = document.getElementById('out-' + k);
+      const dst = document.getElementById('out-' + k + '2');
+      if (src && dst && src.textContent !== '—') dst.textContent = src.textContent;
+    });
+  });
+  const tgt = document.getElementById('out-eta');
+  if (tgt) observer.observe(tgt, { childList: true, subtree: true, characterData: true });
+});
+</script>
+<script src="ui.js"></script>
+
+</body>
+</html>
